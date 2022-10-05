@@ -14,12 +14,12 @@ if(mod(imgMetadata.Width, pocetStlpcov)~= 0)
 end 
 
 %k[pocetRiadkov, pocetStlpcov] = zeros;
-sirkaKvadrantu = imgMetadata.Width / pocetStlpcov;
-vyskaKvadrantu = imgMetadata.Height / pocetRiadkov;
+WKvadrantu = (imgMetadata.Width / pocetStlpcov)-1;
+HKvadrantu = (imgMetadata.Height / pocetRiadkov)-1;
 
 for i = 1:pocetStlpcov
    for j = 1:pocetRiadkov
-        k = inputImage((j*sirkaKvadrantu):(j*sirkaKvadrantu+sirkaKvadrantu), (i*vyskaKvadrantu):(i*vyskaKvadrantu+vyskaKvadrantu), :);
+        k = inputImage((j*WKvadrantu):(j*WKvadrantu+WKvadrantu), (i*HKvadrantu):(i*HKvadrantu+HKvadrantu), :);
         K{j,i} = k;
    end
 end
