@@ -1,6 +1,7 @@
 function [outputArg1,outputArg2] = cv05_a(inputImg, numOfBits, numOfRows, numOfColums, angle, distance)
 %CV05_A Summary of this function goes here
 %   Detailed explanation goes here
+%GLCM matica
 
 inputImage = imread(inputImg);
 imageMetadata = imfinfo(inputImg);
@@ -19,6 +20,7 @@ imgSubsample = imgSubsample.*(256/(2^numOfBits));
 vyskaPixelu = vyskaImg / numOfRows;
 sirkaPixelu = sirkaImg / numOfColums;
 pocitadlo = 1;
+%GLCM
 for i=1:numOfRows
     for j=1:numOfColums
         M(:,:,:) = rgb2gray(inputImage(1+vyskaPixelu*(i-1):vyskaPixelu*(i), ...

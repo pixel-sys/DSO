@@ -4,7 +4,6 @@ function [GLCM] = cv06b(inputImage, vzdialenost)
 inputImg = rgb2gray(imread(inputImage));
 imgMetadata = imfinfo (inputImage);
 
-
 GLCM = uint16(zeros(imgMetadata.Width,imgMetadata.Height));
 
 odsadenie = vzdialenost-1;
