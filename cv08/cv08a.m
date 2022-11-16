@@ -1,69 +1,50 @@
-function [imageNoised, imageFiltered] = cv08a(inputImage, noiseType, filterSize, filterType, paramNoise)
+function [imageNoised, imageFiltered] = cv08a(inputImage, noiseType, paramNoise, filterSize, filterType)
 %CV08A Summary of this function goes here
 %   Detailed explanation goes here
-% [imageNoised, imageFiltered] = cv08a('Lena.png', 'G', 3, 'minFilter', 0.01)
+% [imageNoised, imageFiltered] = cv08a('../Lc.bmp', 'G', 0.01, 3, 'minFilter')
+
 image = imread(inputImage);
 imageMeta = imfinfo(inputImage);
 imageGray = rgb2gray(image);
+
+switch noiseType
+    case 'G'
+        imageNoised = imnoise(imageGray,"gaussian", paramNoise);
+    case 'SaP'
+        imageNoised = imnoise(imageGray,"salt & pepper", paramNoise);
+end
+
 imageFiltered = uint8(zeros(imageMeta.Width:imageMeta.Height));
 % imageDiff = uint8(zeros(imageMeta.Width:imageMeta.Height));
 
-if strcmp(noiseType, 'G')
-    imageNoised = imnoise(imageGray,"gaussian", paramNoise);
-elseif strcmp(noiseType, 'SaP')
-    imageNoised = imnoise(imageGray,"salt & pepper", paramNoise);
-end
 windowLeft = (filterSize+1)/2;
 windowRight = windowLeft-1;
 
-if strcmp(filterType, 'minFilter')
-    for i=windowLeft:imageMeta.Width-windowRight
-        for j=windowLeft:imageMeta.Height-windowRight
-            inpMatrix = imageNoised(i-windowRight:i+windowRight, j-windowRight:j+windowRight);
-            imageFiltered(i,j) = min(inpMatrix(:));
-        end
-    end
-elseif strcmp(filterType, 'maxFilter')
-    for i=windowLeft:imageMeta.Width-windowRight
-        for j=windowLeft:imageMeta.Height-windowRight
-            inpMatrix = imageNoised(i-windowRight:i+windowRight, j-windowRight:j+windowRight);
-            imageFiltered(i,j) = max(inpMatrix(:));
-        end
-    end
-elseif strcmp(filterType, 'medianFilter')
-    for i=windowLeft:imageMeta.Width-windowRight
-        for j=windowLeft:imageMeta.Height-windowRight
-            inpMatrix = imageNoised(i-windowRight:i+windowRight, j-windowRight:j+windowRight);
-            imageFiltered(i,j) = median(inpMatrix(:));
-        end
-    end
-elseif strcmp(filterType, 'averageFilter')
-    for i=windowLeft:imageMeta.Width-windowRight
-        for j=windowLeft:imageMeta.Height-windowRight
-            inpMatrix = imageNoised(i-windowRight:i+windowRight, j-windowRight:j+windowRight);
-            imageFiltered(i,j) = mean(inpMatrix(:));
-        end
-    end
-elseif strcmp(filterType, 'gauss3Filter')
-
-    W = [0 1/6 0; 1/6 1/3 1/6; 0 1/6 0];
-    for i=windowLeft:imageMeta.Width-windowRight
-        for j=windowLeft:imageMeta.Height-windowRight
-            inpMatrix = imageNoised(i-windowRight:i+windowRight, j-windowRight:j+windowRight);
-            imageFiltered(i,j) = uint8(sum(sum(double(inpMatrix).*W)));
-        end
-    end
-elseif strcmp(filterType, 'ordGauss3Filter')
-
-    W = [0 1/6 0, 1/6 1/3 1/6, 0 1/6 0];
-    for i=windowLeft:imageMeta.Width-windowRight
-        for j=windowLeft:imageMeta.Height-windowRight
-            inpMatrix = imageNoised(i-windowRight:i+windowRight, j-windowRight:j+windowRight);
-            inpMatrixResized = sort(imresize(inpMatrix, [1 9]));
-            imageFiltered(i,j) = uint8(sum(double(inpMatrixResized).*W));
+for i=windowLeft:imageMeta.Width-windowRight
+    for j=windowLeft:imageMeta.Height-windowRight
+        inpMatrix = imageNoised(i-windowRight:i+windowRight, ...
+                    j-windowRight:j+windowRight);
+        switch filterType
+            case 'minFilter'
+                imageFiltered(i,j) = min(inpMatrix(:));
+            case 'maxFilter'
+                imageFiltered(i,j) = max(inpMatrix(:));
+            case 'medianFilter'
+                imageFiltered(i,j) = median(inpMatrix(:));
+            case 'averageFilter'
+                imageFiltered(i,j) = mean(inpMatrix(:));
+            case 'gauss3Filter'
+                W = [0 1/6 0; 1/6 1/3 1/6; 0 1/6 0];
+                imageFiltered(i,j) = uint8(sum(sum(double(inpMatrix).*W)));
+            case 'ordGauss3Filter'
+                W = [0 1/6 0, 1/6 1/3 1/6, 0 1/6 0];
+                inpMatrixResized = sort(imresize(inpMatrix, [1 9]));
+                imageFiltered(i,j) = uint8(sum(double(inpMatrixResized).*W));
         end
     end
 end
+            
+
 
 % imageDiff = imabsdiff(imageGray,imageNoised);
 imageDiffOvsN = 128+(imageGray-imageNoised);

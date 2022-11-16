@@ -23,7 +23,7 @@ switch noiseType
         imageDiff = imabsdiff(imageGray, zasumenyImg);
         odsumenyImg = medfilt2(zasumenyImg, [2 2]);
 end
-EVIAN
+
 
 subplot(1,4,1); imshow(imageGray);
 subplot(1,4,2); imshow(zasumenyImg);
