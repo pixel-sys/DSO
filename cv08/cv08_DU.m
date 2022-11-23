@@ -26,13 +26,17 @@ imageDenoised = imageNoised;
         energyB = abs(abs(B));
         
         diffBlue = abs(R - G);
-        diffGreen= abs(R - B);
+        diffGreen = abs(R - B);
+        diffEnergyG = abs(energyR - energyG);
+        diffEnergyB = abs(energyR - energyB);
+        
+        
 
         redFiltered = zeros(size(R,1), size(R,2));
-        threshold = 33;
+        threshold = 20;
         for i = 1:size(R,1)
             for j = 1:size(R,2)
-                if diffBlue(i,j) > threshold || diffGreen(i,j) > threshold
+                if diffBlue(i,j) > threshold && diffGreen(i,j) > threshold
                     redFiltered(i,j) = G(i,j);
                 else
                     redFiltered(i,j)= R(i,j);

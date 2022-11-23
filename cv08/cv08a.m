@@ -44,8 +44,6 @@ for i=windowLeft:imageMeta.Width-windowRight
     end
 end
             
-
-
 % imageDiff = imabsdiff(imageGray,imageNoised);
 imageDiffOvsN = 128+(imageGray-imageNoised);
 imageDiffOvsF = imabsdiff(imageGray, imageFiltered);

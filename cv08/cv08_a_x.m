@@ -9,9 +9,6 @@ imageGray = rgb2gray(inputImage);
 
 zasumenyImg = 0;
 
-switch noiseType
-    case 'gauss'
-        zasumenyImg = imnoise(imageGray, 'gaussian', koeficient);
         imageDiff = imabsdiff(imageGray, zasumenyImg);
         odsumenyImg = wiener2(zasumenyImg,[3 3]);
     case 'poisson'
@@ -19,6 +16,9 @@ switch noiseType
         imageDiff = imabsdiff(imageGray, zasumenyImg);
         odsumenyImg = wiener2(zasumenyImg,[3 3]);
     case 'salt'
+switch noiseType
+    case 'gauss'
+        zasumenyImg = imnoise(imageGray, 'gaussian', koeficient);
         zasumenyImg = imnoise(imageGray, 'salt & pepper', koeficient);
         imageDiff = imabsdiff(imageGray, zasumenyImg);
         odsumenyImg = medfilt2(zasumenyImg, [2 2]);
