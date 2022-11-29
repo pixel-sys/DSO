@@ -2,22 +2,23 @@ function cv09_DU (referenceImg, inputImg, velkostOkna , numberOfTops)
 % cv09_DU ('../Lc.bmp', 'lena_hires.png', 64, 10);
 % z maleho img vytovor DB dct aka dictionary a podla niecoho zakoduj iny
 % img pomocou dictionary (najvacsia zhoda)
-% + urobit zoznam most used dct's from DB 
+% + take most used (numberOfTops) DCT from daset DB  and encode new image with it
 
 imgReference = imread(referenceImg);
 imgReference = rgb2gray(imgReference);
 inputImg = imread(inputImg);
 inputImg = rgb2gray(inputImg);
-metadata = imfinfo(referenceImg);
+% metadata = imfinfo(referenceImg);
 
 %good to know
-% DCT z velkeho okna (rozmeru) je vypoctova natocna vela kombinacii
+% DCT z velkeho okna (rozmeru) je vypoctova narocna (vela kombinacii)
 vyska = sqrt(velkostOkna);
-sirka = vyska;
+% sirka = vyska;
 
     function DCT_database = dtcDatabase(image, rozmer_okna)
         posY = 0;
         posX = 0;
+        tic;
         for y = 1:rozmer_okna:(size(image, 1))
             posY = posY + 1; 
             for x = 1:rozmer_okna:(size(image, 2)) 
@@ -27,16 +28,22 @@ sirka = vyska;
             end
             posX = 0;
         end
+        t = num2str(toc);
+        disp(strcat('DCT DB creation time: ', t, 's')); 
     end
     
     function zagged = zigzag_cells(DCT_cells, rozmer_okna)
+        tic;
         for y = 1:size(DCT_cells, 1)
             for x = 1:size(DCT_cells, 2)
                 zagged{y, x} = zigsc(DCT_cells{y, x}, rozmer_okna);
             end
         end
+        t = num2str(toc);
+        disp(strcat('zigzag time: ', t, 's'));
     end
     function inverse_output = recoverImage(DCT_cells, rozmer_okna)
+        tic;
         for y = 1:size(DCT_cells, 1)
             for x = 1:size(DCT_cells, 2)
                 inverse_zigzag{y, x} = izigsc(DCT_cells{y, x}, rozmer_okna);
@@ -44,8 +51,11 @@ sirka = vyska;
             end
         end
         inverse_output = spreadCells21matrix(inverse_dct, rozmer_okna);
+        t = num2str(toc);
+        disp(strcat('inverse zigzag + inverse DCT time: ', t, 's'));
     end
     function outputImg = spreadCells21matrix(imgInCells, rozmer_okna)
+        tic;
         posY = 0;
         posX = 0;
         Img = zeros(size(imgInCells, 1)*rozmer_okna, ...
@@ -59,9 +69,12 @@ sirka = vyska;
             posX = 0;
         end
         outputImg = Img;
+        t = num2str(toc);
+        disp(strcat('Img rebuid time: ', t, 's'));
    end
 
     function [encodedImg, counter]= compare_DCTs(DCT_DB, imgDCT)
+        tic;
         counter = zeros(size(DCT_DB, 1), size(DCT_DB, 2));
         for y = 1:size(imgDCT, 1)
             for x = 1:size(imgDCT, 2)
@@ -70,9 +83,11 @@ sirka = vyska;
                 counter(posY, posX) = counter(posY, posX)+1;
             end
         end
+        t = num2str(toc);
+        disp(strcat('DCT DB compare time: ', t, 's'));
     end
     function [posX, posY]= findMatch(DCT_DB, DCT)
-        minimum = 999999999999999999999;
+        minimum = inf;
         for y = 1:size(DCT_DB, 1)
             for x = 1:size(DCT_DB, 2)
                 difference = sum(sum(abs(abs(DCT_DB{y, x}) - abs(DCT))));
@@ -83,18 +98,13 @@ sirka = vyska;
                 end
             end
         end
-        %bestMatch = minimum;
     end
     
     function tops = maxFinder(counter, numOfTops, DB)
-        figure;
         for i = 1:numOfTops
             [maxValue, linearIndexesOfMaxes] = max(counter(:));
             [rowsOfMaxes, colsOfMaxes] = find(counter == maxValue,1,'first');
-            tops{i} = [rowsOfMaxes colsOfMaxes];
-            subplot(1,numOfTops,i);
-            imshow(uint8(idct2(DB{rowsOfMaxes, colsOfMaxes})));
-            title(counter(rowsOfMaxes, colsOfMaxes));
+            tops{i} = DB{rowsOfMaxes, colsOfMaxes};
             counter(rowsOfMaxes, colsOfMaxes) = 0;            
         end
     end
@@ -111,12 +121,21 @@ zigzagImgDCT = zigzag_cells(img_dct, vyska);
 recoveredImg = recoverImage(encodedImg, vyska);
 recoveredImg = uint8(recoveredImg);
 
-imgDiff = imabsdiff(inputImg, recoveredImg);
+% imgDiff = imabsdiff(inputImg, recoveredImg);
 
 subplot(1,4,1);imshow(imgReference);title('Dataset');
 subplot(1,4,2);imshow(inputImg);title('InputImg');
 subplot(1,4,3);imshow(recoveredImg);title('recovered Image');
-subplot(1,4,4);imshow(imgDiff);title('Img difference input vs rocovered');
 
-maxFinder(counter, numberOfTops, DCT_DB);
+most_used_DCTS = maxFinder(counter, numberOfTops, DCT_DB);
+
+zigzagDCT_DB = zigzag_cells(most_used_DCTS, vyska);
+[encodedImg, counter] = compare_DCTs(zigzagDCT_DB, zigzagImgDCT);
+
+recoveredImg = recoverImage(encodedImg, vyska);
+recoveredImg = uint8(recoveredImg);
+
+DB_size = size(DCT_DB,1)*size(DCT_DB,2);
+tegzt = strcat('recovered Image small DB (top ', num2str(numberOfTops), ' from  ', num2str(DB_size), '  DB DCTs)');
+subplot(1,4,4);imshow(recoveredImg);title(tegzt);
 end
